@@ -71,58 +71,83 @@ pipeline {
             }
         }
         
-        stage('4. PHP Syntax Check') {
-            steps {
-                ansiColor('xterm') {
-                    bat '''
-                        echo \u001B[36m==========================================\u001B[0m
-                        echo \u001B[36m  PHP SYNTAX CHECK\u001B[0m
-                        echo \u001B[36m==========================================\u001B[0m
-                        
-                        setlocal EnableDelayedExpansion
-                        set "ERROR_FOUND=0"
-                        
-                        for /r %%f in (*.php) do (
-                            if "%%~dpf" neq "%CD%\\vendor\\" (
-                                php -l "%%f" > syntax_check.txt 2>&1
-                                if errorlevel 1 (
-                                    echo.
-                                    echo \u001B[41m\u001B[97m                                          \u001B[0m
-                                    echo \u001B[41m\u001B[97m  ❌ SYNTAX ERROR FOUND!                  \u001B[0m
-                                    echo \u001B[41m\u001B[97m                                          \u001B[0m
-                                    echo.
-                                    echo \u001B[31m[FILE]    : %%f\u001B[0m
-                                    type syntax_check.txt
-                                    echo.
-                                    echo \u001B[41m\u001B[97m  FIX THIS ERROR AND REBUILD              \u001B[0m
-                                    echo.
-                                    set "ERROR_FOUND=1"
-                                    goto :show_result
-                                ) else (
-                                    echo \u001B[32m✅ [OK]    : %%f\u001B[0m
-                                )
-                            )
-                        )
-                        
-                        :show_result
-                        if exist syntax_check.txt del syntax_check.txt
-                        
-                        if "!ERROR_FOUND!"=="1" (
-                            echo.
-                            echo \u001B[41m\u001B[97m==========================================\u001B[0m
-                            echo \u001B[41m\u001B[97m  BUILD FAILED - SYNTAX ERROR             \u001B[0m
-                            echo \u001B[41m\u001B[97m==========================================\u001B[0m
-                            exit /b 1
+       stage('4. PHP Syntax Check') {
+    steps {
+        ansiColor('xterm') {
+            bat '''
+                @echo off
+                setlocal EnableDelayedExpansion
+                chcp 65001 >nul
+                
+                echo.
+                echo ==========================================
+                echo   PHP SYNTAX CHECK
+                echo ==========================================
+                echo.
+                
+                set "ERROR_FOUND=0"
+                set "ERROR_FILE="
+                set "ERROR_LINE="
+                set "ERROR_MSG="
+                set "TOTAL=0"
+                set "PASS=0"
+                set "FAIL=0"
+                
+                for /R %%f in (*.php) do (
+                    set "FP=%%~dpf"
+                    set "FP=!FP:\\=\\!"
+                    if "!FP!" NEQ "%WORKSPACE%\\vendor\\" (
+                        set /a TOTAL+=1
+                        php -l "%%f" >nul 2>nul
+                        if errorlevel 1 (
+                            set /a FAIL+=1
+                            set "ERROR_FILE=%%f"
+                            php -l "%%f" 2>error_detail.txt >nul
+                            for /f "delims=" %%a in (error_detail.txt) do set "ERROR_MSG=%%a"
                         ) else (
-                            echo.
-                            echo \u001B[42m\u001B[97m==========================================\u001B[0m
-                            echo \u001B[42m\u001B[97m  ALL PHP FILES PASSED ✅                 \u001B[0m
-                            echo \u001B[42m\u001B[97m==========================================\u001B[0m
+                            set /a PASS+=1
+                            echo [32m✅ PASS : %%~nxf[0m
                         )
-                    '''
-                }
-            }
+                    )
+                )
+                
+                echo.
+                echo ==========================================
+                echo   RESULTS SUMMARY
+                echo ==========================================
+                echo   Total Checked : !TOTAL!
+                echo   [32mPassed        : !PASS![0m
+                if !FAIL! gtr 0 (
+                    echo   [31mFailed        : !FAIL![0m
+                ) else (
+                    echo   [32mFailed        : !FAIL![0m
+                )
+                echo.
+                
+                if !ERROR_FOUND! == 1 (
+                    echo [41m[97m                                          [0m
+                    echo [41m[97m  ❌ BUILD FAILED - SYNTAX ERROR FOUND    [0m
+                    echo [41m[97m                                          [0m
+                    echo.
+                    echo [31m[FILE]     : !ERROR_FILE![0m
+                    echo [31m[DETAILS]  : !ERROR_MSG![0m
+                    echo.
+                    echo [33m💡 Fix the error above, commit, and rebuild.[0m
+                    echo.
+                    if exist error_detail.txt del error_detail.txt
+                    exit /b 1
+                )
+                
+                echo [42m[97m==========================================[0m
+                echo [42m[97m  ✅ ALL PHP FILES PASSED - BUILD READY   [0m
+                echo [42m[97m==========================================[0m
+                echo.
+                
+                if exist error_detail.txt del error_detail.txt
+            '''
         }
+    }
+}
         
         stage('5. Setup Database') {
             steps {
