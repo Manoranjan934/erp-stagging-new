@@ -1,5 +1,5 @@
 <?php
-Class Haulrequest(){
+class HaulRequest {  
 	public $csodhaulrequestid = '';
 	public $csoid = '';
 	public $mmrid = '';
