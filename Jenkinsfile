@@ -53,15 +53,23 @@ pipeline {
         stage('4. PHP Syntax Check') {
             steps {
                 bat '''
+                    echo Checking PHP syntax...
                     for /r %%f in (*.php) do (
                         if "%%~dpf" neq "%CD%\\vendor\\" (
-                            php -l "%%f" >nul 2>&1
+                            php -l "%%f" > syntax_check.txt 2>&1
                             if errorlevel 1 (
-                                echo SYNTAX ERROR in %%f
+                                echo ==========================================
+                                echo SYNTAX ERROR FOUND!
+                                echo File: %%f
+                                echo ---
+                                type syntax_check.txt
+                                echo ==========================================
+                                del syntax_check.txt
                                 exit /b 1
                             )
                         )
                     )
+                    if exist syntax_check.txt del syntax_check.txt
                     echo All PHP files OK
                 '''
             }
@@ -137,7 +145,7 @@ pipeline {
             echo ""
         }
         failure {
-            echo "FAILED! Check: 1) XAMPP running 2) GitHub token 3) PATH set"
+            echo "FAILED! Check console output above for exact error details."
         }
     }
 }
