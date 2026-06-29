@@ -45,7 +45,7 @@ pipeline {
         
         stage('3. Install Dependencies') {
             steps {
-                bat 'composer install --no-interaction --prefer-dist --optimize-autoloader'
+                bat 'composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs'
                 echo "Dependencies installed"
             }
         }
