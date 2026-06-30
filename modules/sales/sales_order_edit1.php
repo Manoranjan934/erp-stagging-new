@@ -12,8 +12,7 @@ $obj_uom = new Uom('','','','','');
 $obj_saleorder = new Sale_order('', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '');
 
 $get_sales_order = $obj_saleorder->get_seles_order_edit($_GET['id']);
-$data_salesorder=mysqli_fetch_array($get_sales_order)
-
+$data_salesorder=mysqli_fetch_array($get_sales_order);
 $getuom = $obj_uom->getalluom();
 $uom_data=array();
 while($uom_rows=mysqli_fetch_array($getuom)) {
