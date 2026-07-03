@@ -1,10 +1,7 @@
-.git
-.github
-.vscode
-scripts
-docs
-logs
-config
-Jenkinsfile
-README.md
-.gitignore
+vendor/
+node_modules/
+build/
+logs/
+backup/
+print_pdf/
+assets/mpdf/
