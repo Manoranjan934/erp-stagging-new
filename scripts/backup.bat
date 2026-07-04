@@ -42,25 +42,7 @@ echo.
 echo [INFO] Creating Project Backup...
 echo.
 
-robocopy ^
-"%PROJECT_PATH%" ^
-"%BACKUP_PATH%" ^
-/E ^
-/R:2 ^
-/W:2 ^
-/LOG:"%BACKUP_PATH%\backup.log" ^
-/XD ^
-".git" ^
-".github" ^
-".vscode" ^
-"scripts" ^
-"jenkins" ^
-"backup" ^
-"logs" ^
-/XF ^
-"Jenkinsfile" ^
-".gitignore" ^
-"README.md"
+robocopy "%PROJECT_PATH%" "%BACKUP_PATH%" /E /R:2 /W:2 /XD ".git" ".github" ".vscode" "scripts" "backup" "logs" "build" /XF "Jenkinsfile" ".gitignore" "README.md" /LOG:"%BACKUP_PATH%\backup.log"
 
 :: ------------------------------
 :: Check Result
