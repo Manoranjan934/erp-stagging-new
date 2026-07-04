@@ -12,11 +12,8 @@ pipeline {
     environment {
 
         PROJECT_NAME = 'ERP-STAGGING-NEW'
-
         DEPLOY_PATH = 'D:/Xampp-org/htdocs/erp-stagging-new'
-
         BACKUP_PATH = 'D:/Xampp-org/htdocs/backup'
-
         PHP_PATH = 'D:/Xampp-org/php/php.exe'
 
     }
@@ -55,9 +52,7 @@ pipeline {
             steps {
 
                 bat 'git --version'
-
                 bat 'php -v'
-
                 bat 'composer --version'
 
             }
@@ -84,6 +79,16 @@ pipeline {
 
         }
 
+        stage('Build Package') {
+
+            steps {
+
+                bat 'scripts\\build-package.bat'
+
+            }
+
+        }
+
         stage('Backup') {
 
             steps {
@@ -100,13 +105,17 @@ pipeline {
 
         success {
 
+            echo '========================================'
             echo 'BUILD SUCCESSFUL'
+            echo '========================================'
 
         }
 
         failure {
 
+            echo '========================================'
             echo 'BUILD FAILED'
+            echo '========================================'
 
         }
 
