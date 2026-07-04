@@ -2,114 +2,74 @@
 setlocal EnableDelayedExpansion
 
 echo ==========================================
-echo BUILD PACKAGE STAGE
+echo BUILD PACKAGE
 echo ==========================================
 
-REM -------------------------------------------------
-REM Configuration
-REM -------------------------------------------------
-
 set PROJECT_NAME=ERP-STAGGING-NEW
-set BUILD_NUMBER=%BUILD_NUMBER%
-set ARTIFACT_DIR=build\artifacts
 
-if "%BUILD_NUMBER%"=="" set BUILD_NUMBER=LOCAL
+if "%BUILD_NUMBER%"=="" (
+    set BUILD_NUMBER=LOCAL
+)
+
+set ARTIFACT_DIR=build\artifacts
 
 set ARTIFACT_NAME=%PROJECT_NAME%_%BUILD_NUMBER%.zip
 
 echo.
-echo Project        : %PROJECT_NAME%
-echo Build Number   : %BUILD_NUMBER%
-echo Artifact       : %ARTIFACT_NAME%
-echo.
 
-REM -------------------------------------------------
-REM Create Artifact Directory
-REM -------------------------------------------------
+echo Creating artifact folder...
 
 if not exist "%ARTIFACT_DIR%" (
     mkdir "%ARTIFACT_DIR%"
 )
 
-REM -------------------------------------------------
-REM Remove Old ZIP Files
-REM -------------------------------------------------
+echo Cleaning previous ZIP...
 
 del /q "%ARTIFACT_DIR%\*.zip" >nul 2>&1
 
-REM -------------------------------------------------
-REM Create ZIP Package
-REM -------------------------------------------------
-
-echo Creating deployment package...
+echo Creating ZIP...
 
 powershell -NoProfile -Command ^
-"Compress-Archive -Force ^
--Path ^
-'assets', ^
-'classes', ^
-'config', ^
-'includes', ^
-'modules', ^
-'vendor', ^
-'index.php', ^
-'composer.json', ^
-'composer.lock' ^
--DestinationPath '%ARTIFACT_DIR%\%ARTIFACT_NAME%'"
+"Compress-Archive -Path assets,classes,config,includes,modules,vendor,index.php,composer.json,composer.lock -DestinationPath '%ARTIFACT_DIR%\%ARTIFACT_NAME%' -Force"
 
 if errorlevel 1 (
-    echo ERROR: Failed to create ZIP package.
+    echo ERROR : ZIP creation failed.
     exit /b 1
 )
-
-REM -------------------------------------------------
-REM Verify ZIP
-REM -------------------------------------------------
 
 if not exist "%ARTIFACT_DIR%\%ARTIFACT_NAME%" (
-    echo ERROR: Artifact not found.
+    echo ERROR : ZIP not found.
     exit /b 1
 )
 
-echo ZIP package created successfully.
+echo ZIP created.
 
-REM -------------------------------------------------
-REM Generate Manifest
-REM -------------------------------------------------
-
-echo Generating manifest...
+echo Creating manifest...
 
 (
-echo ===================================
-echo ERP STAGING BUILD MANIFEST
-echo ===================================
 echo Project=%PROJECT_NAME%
 echo Build=%BUILD_NUMBER%
 echo Date=%DATE%
 echo Time=%TIME%
-echo Computer=%COMPUTERNAME%
-echo User=%USERNAME%
-) > "%ARTIFACT_DIR%\manifest.txt"
+)> "%ARTIFACT_DIR%\manifest.txt"
 
-REM -------------------------------------------------
-REM Generate SHA256
-REM -------------------------------------------------
+echo Manifest created.
 
-echo Generating SHA256 checksum...
+echo Creating checksum...
 
-powershell -NoProfile -Command ^
-"Get-FileHash '%ARTIFACT_DIR%\%ARTIFACT_NAME%' -Algorithm SHA256 | Format-List > '%ARTIFACT_DIR%\checksum.sha256'"
+certutil -hashfile "%ARTIFACT_DIR%\%ARTIFACT_NAME%" SHA256 > "%ARTIFACT_DIR%\checksum.sha256"
 
-REM -------------------------------------------------
-REM Save Latest Artifact
-REM -------------------------------------------------
+if errorlevel 1 (
+    echo ERROR : Checksum failed.
+    exit /b 1
+)
 
 echo %ARTIFACT_NAME% > "%ARTIFACT_DIR%\latest.txt"
 
 echo.
+
 echo ==========================================
-echo BUILD PACKAGE COMPLETED SUCCESSFULLY
+echo BUILD PACKAGE SUCCESS
 echo ==========================================
-echo.
 
 exit /b 0

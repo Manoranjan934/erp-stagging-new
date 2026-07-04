@@ -121,7 +121,7 @@ pipeline {
 
         always {
 
-            cleanWs()
+    echo "Workspace cleanup disabled for debugging."
 
         }
 
