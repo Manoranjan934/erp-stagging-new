@@ -2,8 +2,13 @@
 setlocal EnableDelayedExpansion
 
 echo ==========================================
-echo BUILD PACKAGE
+echo BUILD PACKAGE STAGE
 echo ==========================================
+echo.
+
+REM =====================================================
+REM Configuration
+REM =====================================================
 
 set PROJECT_NAME=ERP-STAGGING-NEW
 
@@ -12,64 +17,124 @@ if "%BUILD_NUMBER%"=="" (
 )
 
 set ARTIFACT_DIR=build\artifacts
-
 set ARTIFACT_NAME=%PROJECT_NAME%_%BUILD_NUMBER%.zip
+set ARTIFACT_PATH=%ARTIFACT_DIR%\%ARTIFACT_NAME%
 
+echo Project        : %PROJECT_NAME%
+echo Build Number   : %BUILD_NUMBER%
+echo Artifact Path  : %ARTIFACT_PATH%
 echo.
 
-echo Creating artifact folder...
+REM =====================================================
+REM Create Artifact Directory
+REM =====================================================
 
 if not exist "%ARTIFACT_DIR%" (
+    echo Creating artifact directory...
     mkdir "%ARTIFACT_DIR%"
 )
 
-echo Cleaning previous ZIP...
+if not exist "%ARTIFACT_DIR%" (
+    echo ERROR: Unable to create artifact directory.
+    exit /b 1
+)
 
-del /q "%ARTIFACT_DIR%\*.zip" >nul 2>&1
+REM =====================================================
+REM Remove Old Artifact
+REM =====================================================
 
-echo Creating ZIP...
+if exist "%ARTIFACT_PATH%" (
+    del /f /q "%ARTIFACT_PATH%"
+)
 
-powershell -NoProfile -Command ^
-"Compress-Archive -Path assets,classes,config,includes,modules,vendor,index.php,composer.json,composer.lock -DestinationPath '%ARTIFACT_DIR%\%ARTIFACT_NAME%' -Force"
+REM =====================================================
+REM Create Deployment ZIP
+REM =====================================================
+
+echo Creating deployment package...
+echo.
+
+powershell -NoProfile -ExecutionPolicy Bypass ^
+"Compress-Archive -Force -DestinationPath '%ARTIFACT_PATH%' -Path 'assets','classes','config','includes','modules','vendor','index.php','composer.json','composer.lock'"
 
 if errorlevel 1 (
-    echo ERROR : ZIP creation failed.
+    echo.
+    echo ERROR: Failed to create deployment package.
     exit /b 1
 )
 
-if not exist "%ARTIFACT_DIR%\%ARTIFACT_NAME%" (
-    echo ERROR : ZIP not found.
+if not exist "%ARTIFACT_PATH%" (
+    echo.
+    echo ERROR: Artifact ZIP was not created.
     exit /b 1
 )
 
-echo ZIP created.
+echo ZIP package created successfully.
+echo.
 
-echo Creating manifest...
+REM =====================================================
+REM Generate Manifest
+REM =====================================================
+
+echo Generating manifest...
 
 (
+echo ======================================
+echo ERP STAGING BUILD MANIFEST
+echo ======================================
 echo Project=%PROJECT_NAME%
 echo Build=%BUILD_NUMBER%
 echo Date=%DATE%
 echo Time=%TIME%
+echo Computer=%COMPUTERNAME%
+echo User=%USERNAME%
 )> "%ARTIFACT_DIR%\manifest.txt"
 
-echo Manifest created.
-
-echo Creating checksum...
-
-certutil -hashfile "%ARTIFACT_DIR%\%ARTIFACT_NAME%" SHA256 > "%ARTIFACT_DIR%\checksum.sha256"
-
-if errorlevel 1 (
-    echo ERROR : Checksum failed.
+if not exist "%ARTIFACT_DIR%\manifest.txt" (
+    echo ERROR: Manifest creation failed.
     exit /b 1
 )
 
+echo Manifest created successfully.
+echo.
+
+REM =====================================================
+REM Generate SHA256
+REM =====================================================
+
+echo Generating SHA256 checksum...
+
+certutil -hashfile "%ARTIFACT_PATH%" SHA256 > "%ARTIFACT_DIR%\checksum.sha256"
+
+if errorlevel 1 (
+    echo ERROR: Failed to generate checksum.
+    exit /b 1
+)
+
+if not exist "%ARTIFACT_DIR%\checksum.sha256" (
+    echo ERROR: checksum.sha256 was not created.
+    exit /b 1
+)
+
+echo Checksum created successfully.
+echo.
+
+REM =====================================================
+REM Save Latest Artifact
+REM =====================================================
+
 echo %ARTIFACT_NAME% > "%ARTIFACT_DIR%\latest.txt"
 
+if not exist "%ARTIFACT_DIR%\latest.txt" (
+    echo ERROR: latest.txt was not created.
+    exit /b 1
+)
+
+echo latest.txt created successfully.
 echo.
 
 echo ==========================================
-echo BUILD PACKAGE SUCCESS
+echo BUILD PACKAGE COMPLETED SUCCESSFULLY
 echo ==========================================
 
 exit /b 0

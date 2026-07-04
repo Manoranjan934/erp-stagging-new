@@ -68,10 +68,9 @@ robocopy ^
 if %ERRORLEVEL% GEQ 8 (
     echo.
     echo [ERROR] Backup Failed.
-    pause
     exit /b 1
 )
 
 echo.
 echo [SUCCESS] Backup Completed Successfully.
-pause
+exit /b 0
