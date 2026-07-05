@@ -63,6 +63,13 @@ pipeline {
             }
         }
 
+        stage('Verify Artifact') {
+            steps {
+                bat 'scripts\\verify.bat'
+            }
+
+        }
+
         stage('Backup') {
             steps {
                 bat 'scripts\\backup.bat'
