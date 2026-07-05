@@ -75,6 +75,15 @@ pipeline {
                 bat 'scripts\\backup.bat'
             }
         }
+        stage('Deploy (Phase 1)') {
+
+            steps {
+
+                 bat 'scripts\\deploy.bat'
+
+            }
+
+       }
 
     }
 
