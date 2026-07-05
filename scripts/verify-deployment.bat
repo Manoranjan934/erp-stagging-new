@@ -10,7 +10,7 @@ set "DEPLOY_PATH=D:\Xampp-org\htdocs\erp-stagging-new"
 echo.
 
 if not exist "%DEPLOY_PATH%\index.php" (
-    echo [ERROR] index.php not found.
+    echo [ERROR] index.php missing.
     exit /b 1
 )
 
@@ -19,6 +19,22 @@ if not exist "%DEPLOY_PATH%\vendor\autoload.php" (
     exit /b 1
 )
 
-echo [PASS] Deployment verified successfully.
+if not exist "%DEPLOY_PATH%\classes" (
+    echo [ERROR] classes folder missing.
+    exit /b 1
+)
+
+if not exist "%DEPLOY_PATH%\modules" (
+    echo [ERROR] modules folder missing.
+    exit /b 1
+)
+
+if not exist "%DEPLOY_PATH%\includes" (
+    echo [ERROR] includes folder missing.
+    exit /b 1
+)
+
+echo.
+echo [PASS] Production deployment verified.
 
 exit /b 0
