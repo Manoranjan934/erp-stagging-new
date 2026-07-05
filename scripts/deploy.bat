@@ -2,7 +2,7 @@
 setlocal
 
 echo ==========================================
-echo ENTERPRISE DEPLOYMENT - PHASE 1
+echo ENTERPRISE DEPLOYMENT
 echo ==========================================
 
 REM ==========================================
@@ -20,7 +20,7 @@ echo Temp Folder  : %TEMP_DEPLOY%
 echo.
 
 REM ==========================================
-REM Verify ZIP Exists
+REM Verify ZIP
 REM ==========================================
 
 if not exist "%ZIP_FILE%" (
@@ -28,14 +28,11 @@ if not exist "%ZIP_FILE%" (
     exit /b 1
 )
 
-echo [SUCCESS] Artifact ZIP found.
+echo [PASS] Artifact ZIP found.
 
 REM ==========================================
-REM Clean Temporary Folder
+REM Clean Temp Folder
 REM ==========================================
-
-echo.
-echo Cleaning temporary deployment folder...
 
 if exist "%TEMP_DEPLOY%" (
     rmdir /s /q "%TEMP_DEPLOY%"
@@ -43,27 +40,64 @@ if exist "%TEMP_DEPLOY%" (
 
 mkdir "%TEMP_DEPLOY%"
 
-echo [SUCCESS] Temporary folder prepared.
+echo [PASS] Temporary deployment folder prepared.
 
 REM ==========================================
 REM Extract ZIP
 REM ==========================================
 
 echo.
-echo Extracting deployment package...
+echo Extracting package...
 
 powershell -Command "Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '%TEMP_DEPLOY%' -Force"
 
 if errorlevel 1 (
-    echo [ERROR] ZIP extraction failed.
+    echo [ERROR] Extraction failed.
     exit /b 1
 )
 
-echo [SUCCESS] ZIP extracted successfully.
+echo [PASS] ZIP extracted successfully.
 
 echo.
 echo ==========================================
-echo DEPLOYMENT PHASE 1 COMPLETED
+echo VALIDATING DEPLOYMENT PACKAGE
+echo ==========================================
+
+REM ==================================================
+REM Validate Required Files
+REM ==================================================
+
+if not exist "%TEMP_DEPLOY%\index.php" (
+    echo [ERROR] index.php missing.
+    exit /b 1
+)
+
+if not exist "%TEMP_DEPLOY%\vendor\autoload.php" (
+    echo [ERROR] vendor\autoload.php missing.
+    exit /b 1
+)
+
+if not exist "%TEMP_DEPLOY%\classes" (
+    echo [ERROR] classes folder missing.
+    exit /b 1
+)
+
+if not exist "%TEMP_DEPLOY%\includes" (
+    echo [ERROR] includes folder missing.
+    exit /b 1
+)
+
+if not exist "%TEMP_DEPLOY%\modules" (
+    echo [ERROR] modules folder missing.
+    exit /b 1
+)
+
+echo.
+echo [PASS] Deployment package validation successful.
+
+echo.
+echo ==========================================
+echo DEPLOYMENT VALIDATION COMPLETED
 echo ==========================================
 
 exit /b 0
