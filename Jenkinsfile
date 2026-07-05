@@ -119,12 +119,15 @@ pipeline {
 
         }
 
-        always {
-
-    echo "Workspace cleanup disabled for debugging."
-
-        }
-
+    post {
+         success {
+             archiveArtifacts artifacts: 'build/artifacts/**', fingerprint: true
     }
+
+    always {
+        
+             cleanWs()
+    }
+}
 
 }
