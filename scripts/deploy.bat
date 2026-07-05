@@ -97,7 +97,20 @@ echo [PASS] Deployment package validation successful.
 
 echo.
 echo ==========================================
-echo DEPLOYMENT VALIDATION COMPLETED
+echo DEPLOYING APPLICATION
 echo ==========================================
 
-exit /b 0
+set "DEPLOY_PATH=D:\Xampp-org\htdocs\erp-stagging-new"
+
+echo Removing old application...
+
+robocopy "%TEMP_DEPLOY%" "%DEPLOY_PATH%" /MIR /R:2 /W:2
+
+set RC=%ERRORLEVEL%
+
+if %RC% GEQ 8 (
+    echo [ERROR] Deployment failed. Robocopy Exit Code: %RC%
+    exit /b 1
+)
+
+echo [PASS] Files deployed successfully.

@@ -85,6 +85,16 @@ pipeline {
 
        }
 
+       stage('Verify Deployment') {
+
+            steps {
+
+                bat 'scripts\\verify-deployment.bat'
+
+            }
+
+        }
+
     }
 
     post {
