@@ -89,7 +89,7 @@ pipeline {
             echo "========================================"
         }
 
-        always {
+        cleanup {
             cleanWs()
         }
     }
