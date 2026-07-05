@@ -75,6 +75,13 @@ pipeline {
                 bat 'scripts\\backup.bat'
             }
         }
+
+        stage('Enable Maintenance Mode') {
+            steps {
+                bat 'scripts\\maintenance-on.bat'
+            }
+        }
+
         stage('Deploy (Phase 1)') {
 
             steps {
@@ -93,6 +100,12 @@ pipeline {
 
             }
 
+        }
+
+        stage('Disable Maintenance Mode') {
+            steps {
+                bat 'scripts\\maintenance-off.bat'
+            }
         }
 
     }

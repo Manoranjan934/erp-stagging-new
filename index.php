@@ -1,4 +1,13 @@
-<?php 
+<?php
+
+$maintenanceFile = __DIR__ . '/maintenance.html';
+
+if (file_exists($maintenanceFile)) {
+    readfile($maintenanceFile);
+    exit;
+}
+
+
 if(isset($_GET['erp']) && ($_GET['erp'] == 16)){
 
 	include "modules/sales/sales_order_print.php";
